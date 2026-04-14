@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     "Journal de stage interactif pour le projet IoT à la Ville de Luxembourg. Suivi quotidien, reconnaissance vocale, missions et export rapport.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.svg",
+    icon: "/favicon.png",
     apple: "/icon-192.png",
   },
 };
