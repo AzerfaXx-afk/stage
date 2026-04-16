@@ -1,4 +1,4 @@
-export type Category = 'inventaire' | 'standards' | 'dvid' | 'recherches' | 'reunions' | 'autre';
+export type Category = 'contexte' | 'cahier_charges' | 'deroulement' | 'bilan' | 'reunions' | 'dvid' | 'autre';
 export type Mood = 'great' | 'good' | 'ok' | 'hard' | 'lost';
 
 export interface JournalEntry {
@@ -7,8 +7,18 @@ export interface JournalEntry {
   category: Category;
   title: string;
   content: string;
-  learnings: string;
+  
+  // Specific for Rapport & Soutenance
+  quoi: string;
+  pourquoi: string;
+  comment: string;
+  
+  // Bilan & Compétences
   challenges: string;
+  skillsSavoir: string;      // Théorie
+  skillsSavoirFaire: string; // Technique
+  skillsSavoirEtre: string;  // Soft skills
+  
   nextSteps: string;
   mood: Mood;
 }
@@ -32,12 +42,13 @@ export interface AppState {
 }
 
 export const CATEGORIES: { key: Category; label: string; emoji: string }[] = [
-  { key: 'inventaire', label: 'Inventaire', emoji: '📊' },
-  { key: 'standards', label: 'Standards', emoji: '📐' },
-  { key: 'dvid', label: 'DVID', emoji: '🔧' },
-  { key: 'recherches', label: 'Recherches', emoji: '🔍' },
+  { key: 'contexte', label: 'Contexte/Entreprise', emoji: '🏢' },
+  { key: 'cahier_charges', label: 'Cahier des charges', emoji: '📋' },
+  { key: 'deroulement', label: 'Déroulement (Missions)', emoji: '⚙️' },
+  { key: 'bilan', label: 'Bilan de mission', emoji: '🏆' },
   { key: 'reunions', label: 'Réunions', emoji: '🤝' },
-  { key: 'autre', label: 'Autre', emoji: '📎' },
+  { key: 'dvid', label: 'DVID / Pratique', emoji: '🔧' },
+  { key: 'autre', label: 'Autre', emoji: '📎' }
 ];
 
 export const MOODS: { key: Mood; emoji: string }[] = [
@@ -57,10 +68,11 @@ export const MOOD_MAP: Record<Mood, string> = {
 };
 
 export const CAT_EMOJI: Record<Category, string> = {
-  inventaire: '📊',
-  standards: '📐',
-  dvid: '🔧',
-  recherches: '🔍',
+  contexte: '🏢',
+  cahier_charges: '📋',
+  deroulement: '⚙️',
+  bilan: '🏆',
   reunions: '🤝',
+  dvid: '🔧',
   autre: '📎',
 };

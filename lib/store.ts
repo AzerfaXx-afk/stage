@@ -200,47 +200,71 @@ export function useToast() {
 /* ============================================
    Export helpers
    ============================================ */
-export function exportMarkdown(entries: JournalEntry[], missions: MissionGroup[]): string {
-  const catLabels: Record<string, string> = {
-    inventaire: 'Inventaire', standards: 'Standards', dvid: 'DVID',
-    recherches: 'Recherches', reunions: 'Réunions', autre: 'Autre',
-  };
-  let md = '# 📝 Rapport de Stage — IoT @ Ville de Luxembourg\n\n';
-  md += `> Généré le ${new Date().toLocaleDateString('fr-FR')}\n\n`;
+export function exportOfficialReport(entries: JournalEntry[], missions: MissionGroup[]): string {
+  let md = '# 📝 RAPPORT DE STAGE — IUT NB R&T\n\n';
+  md += `> Généré automatiquement par StageFlow le ${new Date().toLocaleDateString('fr-FR')}\n\n`;
 
-  /* Group entries by week */
-  const byWeek = new Map<string, JournalEntry[]>();
-  for (const e of [...entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())) {
-    const d = new Date(e.date);
-    const weekStart = new Date(d);
-    weekStart.setDate(d.getDate() - d.getDay() + 1);
-    const key = weekStart.toISOString().slice(0, 10);
-    if (!byWeek.has(key)) byWeek.set(key, []);
-    byWeek.get(key)!.push(e);
-  }
+  const contexteEntries = entries.filter((e) => e.category === 'contexte');
+  const cahierEntries = entries.filter((e) => e.category === 'cahier_charges');
+  const deroulementEntries = entries.filter((e) => e.category === 'deroulement' || e.category === 'dvid');
+  const bilanEntries = entries.filter((e) => e.category === 'bilan');
 
-  for (const [week, wEntries] of byWeek) {
-    md += `## 📅 Semaine du ${new Date(week).toLocaleDateString('fr-FR')}\n\n`;
-    for (const e of wEntries) {
-      md += `### ${catLabels[e.category] || e.category} — ${e.title}\n`;
-      md += `*${new Date(e.date).toLocaleDateString('fr-FR')}*\n\n`;
-      if (e.content) md += `${e.content}\n\n`;
-      if (e.learnings) md += `**💡 Apprentissages :** ${e.learnings}\n\n`;
-      if (e.challenges) md += `**⚠️ Difficultés :** ${e.challenges}\n\n`;
-      if (e.nextSteps) md += `**🎯 Prochaines étapes :** ${e.nextSteps}\n\n`;
-      md += '---\n\n';
-    }
-  }
+  md += '## 1. LE CONTEXTE DU STAGE (L\'entreprise et le lieu)\n\n';
+  if (contexteEntries.length === 0) md += '*Aucune donnée saisie.*\n';
+  contexteEntries.forEach((e) => {
+    md += `### ${e.title}\n${e.content}\n\n`;
+  });
 
-  md += '## 🎯 Missions et Tâches\n\n';
-  for (const g of missions) {
-    const done = g.tasks.filter((t) => t.done).length;
-    md += `### ${g.emoji} ${g.title} (${done}/${g.tasks.length})\n\n`;
-    for (const t of g.tasks) {
-      md += `- [${t.done ? 'x' : ' '}] ${t.text}\n`;
-    }
+  md += '## 2. LE CAHIER DES CHARGES DU PROJET (Objectifs)\n\n';
+  if (cahierEntries.length === 0) md += '*Aucune donnée saisie.*\n';
+  cahierEntries.forEach((e) => {
+    md += `### ${e.title}\n${e.content}\n\n`;
+  });
+
+  md += '## 3. LE DÉROULEMENT DE LA MISSION\n\n';
+  md += '> *Cette partie retrace chronologiquement les différentes missions et l\'approche technique (Quoi, Pourquoi, Comment).* \n\n';
+  deroulementEntries.forEach((e) => {
+    md += `### 🎯 ${e.title} (${new Date(e.date).toLocaleDateString('fr-FR')})\n`;
+    if (e.quoi) md += `**Quoi ?**\n${e.quoi}\n\n`;
+    if (e.pourquoi) md += `**Pourquoi ?**\n${e.pourquoi}\n\n`;
+    if (e.comment) md += `**Comment ?**\n${e.comment}\n\n`;
+    if (e.content) md += `**Notes additionnelles :**\n${e.content}\n\n`;
+  });
+
+  md += '## 4. LE BILAN DE LA MISSION (Compétences & Difficultés)\n\n';
+  let allChallenges = [...bilanEntries, ...deroulementEntries].filter(e => e.challenges).map(e => e.challenges);
+  if (allChallenges.length > 0) {
+    md += '### ⚠️ Obstacles et Difficultés rencontrées\n';
+    allChallenges.forEach(c => { md += `- ${c}\n`; });
     md += '\n';
   }
+
+  // Aggregate Skills
+  md += '### 🧠 Compétences acquises (Savoir, Savoir-Faire, Savoir-Être)\n\n';
+  
+  md += '#### SAVOIR (Connaissances théoriques)\n';
+  const savoirs = entries.filter(e => e.skillsSavoir).map(e => e.skillsSavoir);
+  if (savoirs.length > 0) {
+    savoirs.forEach(s => { md += `- ${s}\n`; });
+  } else { md += '-(À compléter)-\n'; }
+  md += '\n';
+
+  md += '#### SAVOIR-FAIRE (Compétences techniques)\n';
+  const savoirFaire = entries.filter(e => e.skillsSavoirFaire).map(e => e.skillsSavoirFaire);
+  if (savoirFaire.length > 0) {
+    savoirFaire.forEach(s => { md += `- ${s}\n`; });
+  } else { md += '-(À compléter)-\n'; }
+  md += '\n';
+
+  md += '#### SAVOIR-ÊTRE (Compétences comportementales et relationnelles)\n';
+  const savoirEtre = entries.filter(e => e.skillsSavoirEtre).map(e => e.skillsSavoirEtre);
+  if (savoirEtre.length > 0) {
+    savoirEtre.forEach(s => { md += `- ${s}\n`; });
+  } else { md += '-(À compléter)-\n'; }
+  md += '\n';
+
+  md += '## 5. CONCLUSION ET OUVERTURE\n\n';
+  md += '*À rédiger plus tard avec les objectifs pro à court et moyen terme...*\n\n';
 
   return md;
 }
